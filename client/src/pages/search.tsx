@@ -30,7 +30,10 @@ export default function SearchPage() {
     return (
         <div className="mt-8">
             {error && <p className="text-center text-red-500 text-lg">{error}</p>}
-            <p></p>
+            {(results && results.length > 0) && <div className="grid">
+
+            </div>}
+            {results?.length === 0 && <p>No results found.</p>}
         </div>
     )
 }

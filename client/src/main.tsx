@@ -15,7 +15,8 @@ createRoot(document.getElementById('root')!).render(
       </div>
       <form action="/search" className="flex flex-col lg:flex-row items-center gap-2 mt-6 lg:w-1/2 m-auto" method="GET">
         <div className="flex-1">
-          <select className="border border-gray-400 p-2 cursor-pointer outline-none" name="type" required>
+          <select className="border border-gray-400 p-2 cursor-pointer outline-none" name="type">
+            <option>All Types</option>
             <option value="Image">Images</option>
             <option value="Video">Videos</option>
             <option value="Audio">Audio</option>
