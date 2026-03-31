@@ -30,3 +30,5 @@ psql your_database < public.sql
 ## Todo
 - [ ] Semantic search
 - [ ] Uploader ID grouping (for YouTube archives)
+- [ ] Index the remaining ~66% of <a href="https://theponyarchive.com/archive/youtube">/archive/youtube</a>
+- [ ] Deduplication
