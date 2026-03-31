@@ -6,7 +6,7 @@ export default function HomePage() {
       <SearchBox />
       <div className="text-center">
         <h1 className="text-3xl">The Pony Archive Search</h1>
-        <span className="flex items-center gap-1 justify-center">
+        <span className="flex flex-wrap items-center gap-1 justify-center">
           <p>The unofficial open-source search engine for </p>
           <a className="text-sky-600 underline" href="https://theponyarchive.com" target="_blank">The Pony Archive</a>.
         </span>
