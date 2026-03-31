@@ -15,3 +15,18 @@ npm run setup
 ```
 
 That's it. You can now locally host your very own search interface for TPA.
+
+### Database dumps
+The index for tpa-search is entirely open for public use. You can locally download a snapshot of the current index using `wget`.
+
+```sh
+wget https://dumps.search.twilight.horse/public.sql.gz
+gunzip public.sql.gz
+
+# import into your own database
+psql your_database < public.sql
+```
+
+## Todo
+- [ ] Semantic search
+- [ ] Uploader ID grouping (for YouTube archives)
