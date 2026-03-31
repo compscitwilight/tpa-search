@@ -40,6 +40,11 @@ model Node {
   ogSize       Int?
   ogDate       DateTime?
   scrapedAt    DateTime  @default(now())
+
+  @@index([displayName(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([type])
+  @@index([creator])
+  @@index([ogDate])
 }
 
 model Uploader {
