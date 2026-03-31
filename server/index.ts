@@ -1,14 +1,13 @@
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import type { NodeWhereInput } from "./generated/prisma/models.ts";
 
 import type { SearchQuery } from "./types.ts";
 import { prisma } from "./utils/db.ts";
 import { Prisma } from "./generated/prisma/client.ts";
 import type { Sql } from "@prisma/client/runtime/client";
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(cors());
