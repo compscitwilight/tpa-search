@@ -17,24 +17,13 @@ export function SearchResult({ data }: {
         ogSize?: number
     }
 }) {
-
-    const [processedName, setProcessedName] = useState<string>(data.displayName);
-
-    useEffect(() => {
-        try {
-            setProcessedName(n => decodeURI(n));
-        } catch {
-            console.warn(`failed to process ${processedName}`);
-        }
-    }, [])
-
     return (
         <ErrorBoundary fallback={<p>Something went wrong.</p>}>
             <div className="flex flex-col lg:flex-row border border-gray-400/50 rounded-md p-2">
                 <div className="grid gap-4 flex-1">
                     <div>
                         <div className="flex items-center gap-4">
-                            <h1 className="text-lg font-bold">{processedName}</h1>
+                            <h1 className="text-lg font-bold">{data.displayName}</h1>
                             <SearchResultType type={data.type} />
                         </div>
                         <a className="text-sky-600 underline text-wrap" target="_blank" href={`https://theponyarchive.com${data.absolutePath}`}>

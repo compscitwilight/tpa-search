@@ -4,7 +4,7 @@ import rateLimit from "express-rate-limit";
 
 import type { SearchQuery } from "./types.ts";
 import { prisma } from "./utils/db.js";
-import { Prisma } from "./generated/prisma/client.js";
+import { Prisma, type Node } from "./generated/prisma/client.js";
 import type { Sql } from "@prisma/client/runtime/client";
 
 const PORT = process.env.PORT || 3000;
@@ -41,12 +41,20 @@ app.get("/api/search", async (request: express.Request<{}, {}, {}, SearchQuery>,
         if (epoch) afterDateFilter = Prisma.sql`AND "ogDate" > to_timestamp(${epoch / 1000})`;
     }
 
-    const results = await prisma.$queryRaw`SELECT * FROM "Node"
+    const results = await prisma.$queryRaw<Array<Node>>`SELECT * FROM "Node"
     WHERE ${queryFilter} ${typeFilter} ${uploaderFilter}
     ${beforeDateFilter} ${afterDateFilter}
     
     ${queryOrder}
     LIMIT 50 OFFSET ${skip || 0};`;
+
+    for (const res of results)
+        try {
+            res.displayName = decodeURI(res.displayName);
+        } catch (e) {
+            console.warn(`an error occurred while decoding display name for ${res.displayName}: ${e}`);
+        }
+
     response.status(200).send({
         results
     });
