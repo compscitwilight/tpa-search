@@ -41,7 +41,8 @@ app.get("/api/search", async (request: express.Request<{}, {}, {}, SearchQuery>,
         if (epoch) afterDateFilter = Prisma.sql`AND "ogDate" > to_timestamp(${epoch / 1000})`;
     }
 
-    const results = await prisma.$queryRaw`SELECT * FROM "Node"
+    const results = await prisma.$queryRaw`SET enable_seqscan = off
+    SELECT * FROM "Node"
     WHERE ${queryFilter} ${typeFilter} ${uploaderFilter}
     ${beforeDateFilter} ${afterDateFilter}
     
