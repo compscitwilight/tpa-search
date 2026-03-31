@@ -3,8 +3,8 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 
 import type { SearchQuery } from "./types.ts";
-import { prisma } from "./utils/db.ts";
-import { Prisma } from "./generated/prisma/client.ts";
+import { prisma } from "./utils/db.js";
+import { Prisma } from "./generated/prisma/client.js";
 import type { Sql } from "@prisma/client/runtime/client";
 
 const PORT = process.env.PORT || 3000;

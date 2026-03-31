@@ -1,8 +1,8 @@
 import * as cheerio from "cheerio";
 import * as path from "node:path";
 import bytes from "bytes";
-import { prisma } from "./db.ts";
-import { NodeType } from "../generated/prisma/enums.ts";
+import { prisma } from "./db.js";
+import { NodeType } from "../generated/prisma/enums.js";
 
 const BASE_URL = "https://theponyarchive.com/archive/";
 

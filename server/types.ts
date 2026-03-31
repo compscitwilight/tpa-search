@@ -1,4 +1,4 @@
-import { NodeType } from "./generated/prisma/enums.ts"
+import { NodeType } from "./generated/prisma/enums.js"
 
 export interface SearchQuery {
     q?: string
