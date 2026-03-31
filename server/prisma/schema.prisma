@@ -27,13 +27,25 @@ model Node {
   displayName  String
   absolutePath String   @unique
   description  String?
-  creator      String?
-  genre        String?
-  tags         String[]
-  categories   String[]
+
+  // uploader
+  creator  String?
+  uploader Uploader? @relation(fields: [creator], references: [name])
+
+  genre      String?
+  tags       String[]
+  categories String[]
 
   thumbnailUrl String?
   ogSize       Int?
   ogDate       DateTime?
   scrapedAt    DateTime  @default(now())
+}
+
+model Uploader {
+  id   String  @id @default(uuid())
+  name String  @unique
+  url  String?
+
+  nodes Node[]
 }
