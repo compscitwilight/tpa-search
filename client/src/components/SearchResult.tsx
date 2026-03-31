@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { SearchResultType } from "./SearchResultType";
 
