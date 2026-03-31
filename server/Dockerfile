@@ -10,4 +10,4 @@ COPY . .
 RUN npx prisma generate
 EXPOSE 3000
 
-CMD ["npx", "ts-node", "server/index.ts"]
+CMD ["npx", "ts-node", "index.ts"]
