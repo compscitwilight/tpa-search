@@ -7,4 +7,5 @@ export interface SearchQuery {
     uploader?: string
     beforeDate?: string
     afterDate?: string
+    fuzzy?: any
 }
