@@ -5,7 +5,6 @@ import rateLimit from "express-rate-limit";
 import type { SearchQuery } from "./types.ts";
 import { prisma } from "./utils/db.js";
 import { Prisma, type Node } from "./generated/prisma/client.js";
-import type { Sql } from "@prisma/client/runtime/client";
 
 const PORT = process.env.PORT || 3000;
 
@@ -19,34 +18,49 @@ app.get("/api/search", async (request: express.Request<{}, {}, {}, SearchQuery>,
     const { query } = request;
     const { q, skip, type, uploader, beforeDate, afterDate } = query;
 
-    const queryFilter = q ? Prisma.sql`"displayName" % ${q}` : "1";
-    const queryOrder = q ? Prisma.sql`ORDER BY similarity("displayName", ${q}) DESC` : Prisma.empty;
-
-    const typeFilter = (type && type !== "All Types") ?
-        Prisma.sql`AND "type" = ${type}` : Prisma.empty;
-
-    const uploaderFilter = uploader ?
-        Prisma.sql`AND "creator" = ${uploader}` : Prisma.empty;
-
-    let beforeDateFilter: Sql = Prisma.empty;
-    let afterDateFilter: Sql = Prisma.empty;
-
+    let whereConditions: Array<Prisma.Sql> = new Array<Prisma.Sql>();
+    if (type && type !== "All Types")
+        whereConditions.push(Prisma.sql`"type" = ${type}`);
+    if (uploader) whereConditions.push(Prisma.sql`"creator" = ${uploader}`);
     if (beforeDate) {
         const epoch = Date.parse(beforeDate);
-        if (epoch) beforeDateFilter = Prisma.sql`AND "ogDate" < to_timestamp(${epoch / 1000})`;
+        if (epoch) whereConditions.push(Prisma.sql`"ogDate" < to_timestamp(${epoch / 1000})`);
     }
 
     if (afterDate) {
         const epoch = Date.parse(afterDate);
-        if (epoch) afterDateFilter = Prisma.sql`AND "ogDate" > to_timestamp(${epoch / 1000})`;
+        if (epoch) whereConditions.push(Prisma.sql`"ogDate" > to_timestamp(${epoch / 1000})`);
     }
 
-    const results = await prisma.$queryRaw<Array<Node>>`SELECT * FROM "Node"
-    WHERE ${queryFilter} ${typeFilter} ${uploaderFilter}
-    ${beforeDateFilter} ${afterDateFilter}
-    
-    ${queryOrder}
-    LIMIT 50 OFFSET ${skip || 0};`;
+    const baseFilter = whereConditions.length > 0
+        ? Prisma.sql`WHERE ${Prisma.join(whereConditions, " AND ")}`
+        : Prisma.sql`WHERE 1=1`;
+
+    let results: Array<Node> = new Array<Node>();
+    if (q) {
+        results = await prisma.$queryRaw<Array<Node>>`
+            WITH RANKED AS (
+                SELECT *,
+                similarity("displayName", ${q}) as sim
+                FROM "Node"
+                ${baseFilter}
+                AND "displayName" % ${q}
+                ORDER BY sim DESC
+                LIMIT 500
+            )
+            SELECT id, type, "displayName", "absolutePath", description, creator, genre, tags, categories, "thumbnailUrl", "ogSize", "ogDate", "scrapedAt"
+            FROM ranked
+            ORDER BY sim DESC
+            LIMIT 50 OFFSET ${skip || 0}
+        `;
+    } else {
+        results = await prisma.$queryRaw<Array<Node>>`
+            SELECT * FROM "Node"
+            ${baseFilter}
+            ORDER BY "ogDate" DESC
+            LIMIT 50 OFFSET ${skip || 0}
+        `
+    }
 
     for (const res of results)
         try {
