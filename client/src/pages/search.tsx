@@ -13,6 +13,7 @@ function Loading() {
 export default function SearchPage() {
     const [searchParams] = useSearchParams();
     const [results, setResults] = useState<Array<any>>([]);
+    const [latency, setLatency] = useState<number>();
 
     const [loading, setLoading] = useState<boolean>(true);
     const [showLoadMore, setShowLoadMore] = useState<boolean>(true);
@@ -31,6 +32,7 @@ export default function SearchPage() {
                     setError(json.message || "An unknown error occurred");
                 else {
                     setResults(r => [...r, ...json.results]);
+                    setLatency(json.latencyMs);
                     if (json.results.length === 0 || json.results.length < 50) setShowLoadMore(false);
                     // setDepth(depth => depth + 1);
                 }
@@ -39,9 +41,10 @@ export default function SearchPage() {
     }, [searchParams, depth]);
 
     return (
-        <div className="mt-8">
+        <div className="lg:w-3/4 m-auto mt-8">
             <SearchBox />
-            {(results && results.length > 0) && <div className="grid gap-4 lg:w-3/4 m-auto">
+            {latency !== undefined && <p>took {latency}ms</p>}
+            {(results && results.length > 0) && <div className="grid gap-4">
                 {results.map((res: any, index: number) =>
                     <SearchResult key={index} data={res} />
                 )}

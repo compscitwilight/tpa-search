@@ -6,6 +6,8 @@ export function SearchBox() {
     const defaultQuery = searchParams.get("q");
     const defaultBeforeDate = searchParams.get("beforeDate");
     const defaultAfterDate = searchParams.get("afterDate");
+    const defaultUploader = searchParams.get("uploader");
+    const defaultFuzzy = searchParams.get("fuzzy");
 
     return (
         <form action="/search" className="my-4 items-center gap-2 mt-6 lg:w-1/2 m-auto" method="GET">
@@ -37,14 +39,32 @@ export function SearchBox() {
                     <button className="border border-gray-400 p-2 cursor-pointer" type="submit">Search</button>
                 </div>
             </div>
-            <div className="flex items-center gap-4">
-                <div>
-                    <label className="text-lg font-bold" htmlFor="created-before">Created before</label>
-                    <input id="created-before" name="beforeDate" defaultValue={defaultBeforeDate as string} type="date" />
+            <div className="grid justify-center gap-2">
+                <div className="flex items-center gap-4">
+                    <div>
+                        <label className="text-lg font-bold" htmlFor="created-before">Created before</label>
+                        <input id="created-before" name="beforeDate" defaultValue={defaultBeforeDate as string} type="date" />
+                    </div>
+                    <div>
+                        <label className="text-lg font-bold" htmlFor="created-after">Created after</label>
+                        <input id="created-after" name="afterDate" defaultValue={defaultAfterDate as string} type="date" />
+                    </div>
                 </div>
-                <div>
-                    <label className="text-lg font-bold" htmlFor="created-after">Created after</label>
-                    <input id="created-after" name="afterDate" defaultValue={defaultAfterDate as string} type="date" />
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <label className="text-lg font-bold" htmlFor="uploader">Uploaded by</label>
+                        <input
+                            className="border border-gray-400 p-1 outline-none"
+                            id="uploader"
+                            name="uploader"
+                            type="text"
+                            defaultValue={defaultUploader as string}
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <label className="text-lg font-bold" htmlFor="fuzzy-search">Fuzzy search</label>
+                        <input id="fuzzy-search" name="fuzzy" type="checkbox" defaultChecked={defaultFuzzy !== null} />
+                    </div>
                 </div>
             </div>
         </form>

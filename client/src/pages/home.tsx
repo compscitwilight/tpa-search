@@ -4,7 +4,7 @@ export default function HomePage() {
   return (
     <div className="mt-6">
       <SearchBox />
-      <div className="text-center">
+      <div className="mt-8 text-center">
         <h1 className="text-3xl">The Pony Archive Search</h1>
         <span className="flex flex-wrap items-center gap-1 justify-center">
           <p>The unofficial open-source search engine for </p>
