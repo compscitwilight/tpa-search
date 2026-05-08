@@ -8,7 +8,7 @@ export default function DownloadPage() {
                     className="text-sky-600 underline"
                     target="_blank"
                     href="https://dumps.search.twilight.horse/public.sql.gz"
-                >here</a> (112.91 MB).
+                >here</a> (251 MB).
             </p>
 
             <h2 className="mt-4 text-2xl">Downloading with a command line (with <code>wget</code>)</h2>
