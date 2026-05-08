@@ -1,10 +1,15 @@
 import * as cheerio from "cheerio";
 import * as path from "node:path";
 import bytes from "bytes";
+import plimit from "p-limit";
 import { prisma } from "./db.js";
 import { NodeType } from "../generated/prisma/enums.js";
 
-const BASE_URL = "https://theponyarchive.com/archive/";
+const limit = plimit(3);
+let skip = true;
+export const BASE_URL = "https://theponyarchive.com/archive/";
+
+const DIR_ARG: string | undefined = process.argv[2];
 
 const TypeMap = {
     "/icons/folder.gif": "Directory",
@@ -16,7 +21,7 @@ const TypeMap = {
     "/icons/compressed.gif": NodeType.Compressed,
     "/icons/unknown.gif": NodeType.Unknown
 } as { [src: string]: NodeType | "Directory" };
-const ExtRegex = /\.[^.]+$/;
+export const ExtRegex = /\.[^.]+$/;
 
 function extractMusicArchiveMetadata(absolutePath: string) {
     const result: { artist?: string, album?: string } = {};
@@ -182,6 +187,9 @@ async function scrapeDirectory(directoryUrl: URL, skipUntil?: string, skipDirs: 
             const imgSrc = fileIcon.attr("src");
             if (imgSrc && fileHref) {
                 const absPath = path.join(directoryUrl.pathname, fileHref);
+                // if (absPath.startsWith("/archive/youtube/UCeO7ybWiVOiuV6U5wAVkmaw"))
+                    // skip = false;
+
                 const nodeType = TypeMap[imgSrc];
                 // console.log(absPath);
                 if (!nodeType) {
@@ -208,9 +216,16 @@ async function scrapeDirectory(directoryUrl: URL, skipUntil?: string, skipDirs: 
 
                 if (nodeType === "Directory") {
                     // directoryUrl.pathname = path.join(directoryUrl.pathname, fileHref);
+                    // if (skip && absPath.split("/").length > 4) {
+                    //     console.log(`Skipping ${absPath} due to skip condition`);
+                    //     continue;
+                    // }
+
                     const nextUrl = new URL(fileHref, directoryUrl.href);
                     await scrapeDirectory(nextUrl, newSkipUntil);
-                } else gatherMetadata(absPath, nodeType, fileModified, fileSize !== "-" ? fileSize : undefined);
+                } else {
+                    await limit(() => gatherMetadata(absPath, nodeType, fileModified, fileSize !== "-" ? fileSize : undefined))
+                }
             }
         }
     } catch (error) {
@@ -220,9 +235,7 @@ async function scrapeDirectory(directoryUrl: URL, skipUntil?: string, skipDirs: 
 
 async function startScape() {
     const rootURL = new URL(BASE_URL);
-    await scrapeDirectory(rootURL, "/archive/ponymusicarchive", new Set([
-        // "/archive/youtube/UC7B-gDZEuFo_okuuaG4LTkA"
-    ]));
+    await scrapeDirectory(rootURL, DIR_ARG);
 }
 
 await startScape();
