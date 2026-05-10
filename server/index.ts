@@ -105,6 +105,11 @@ app.get("/api/search", async (request: express.Request<{}, {}, {}, SearchQuery>,
     });
 })
 
+app.get("/api/size", async (_, response: express.Response) => {
+    const sizeData = await prisma.recordsCount.findMany();
+    response.status(200).send(sizeData);
+})
+
 app.listen(PORT, () => {
     console.log(`tpa-search web server is online at :${PORT}`);
 });

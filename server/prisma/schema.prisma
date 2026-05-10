@@ -54,3 +54,8 @@ model Uploader {
 
   nodes Node[]
 }
+
+model RecordsCount {
+  entityName String @id
+  count      Int
+}
