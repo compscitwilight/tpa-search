@@ -106,7 +106,7 @@ app.get("/api/search", async (request: express.Request<{}, {}, {}, SearchQuery>,
 })
 
 app.get("/api/size", async (_, response: express.Response) => {
-    const sizeData = await prisma.recordsCount.findMany();
+    const sizeData = await prisma.recordsCount.findMany({ orderBy: { count: "desc" } });
     response.status(200).send(sizeData);
 })
 
