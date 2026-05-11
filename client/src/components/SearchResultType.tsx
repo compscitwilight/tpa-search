@@ -1,4 +1,4 @@
-const TypeColors = {
+export const NodeTypeColors = {
     "Video": "#FF3B30",
     "Image": "#34C759",
     "Audio": "#007AFF",
@@ -10,7 +10,7 @@ const TypeColors = {
 export function SearchResultType({ type }: { type: string }) {
     return (
         <div className="rounded-lg px-2 font-bold" style={{
-            backgroundColor: TypeColors[type]
+            backgroundColor: NodeTypeColors[type]
         }}>
             {type.toLowerCase()}
         </div>

@@ -1,6 +1,34 @@
-import { SearchBox } from "../components/SearchBox"
+import { useState, useEffect } from "react";
+
+import {
+  Chart as ChartJS, CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
+import { SearchBox } from "../components/SearchBox";
+import { NodeTypeColors } from "../components/SearchResultType";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function HomePage() {
+  const [recordsCount, setRecordsCount] = useState<Array<{ entityName: string, count: number }>>();
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/api/size`)
+      .then(async (response) => {
+        if (!response.ok) {
+          console.warn(`Failed to retrieve database size: ${response.status}`);
+          return;
+        }
+
+        setRecordsCount(await response.json());
+      })
+  }, [setRecordsCount])
+
   return (
     <div className="mt-6">
       <SearchBox />
@@ -18,6 +46,35 @@ export default function HomePage() {
           >View on GitHub</a>
           <a href="/download" className="border border-gray-400/50 p-2 rounded-md">Download the index</a>
         </div>
+
+        {recordsCount && <Bar
+          className="lg:w-1/2 m-auto mt-8"
+          options={{
+            animation: false,
+            scales: {
+              y: {
+                grid: {
+                  display: true,
+                  color: "#999",
+                  lineWidth: 1
+                }
+              }
+            }
+          }}
+          data={{
+            labels: recordsCount.map((e) => e.entityName),
+            datasets: [
+              {
+                label: "",
+                borderRadius: 0,
+                data: recordsCount.map((e) => e.count),
+                backgroundColor: recordsCount.map((e) => NodeTypeColors[e.entityName]),
+                borderColor: "#000",
+                borderWidth: 2
+              }
+            ]
+          }}
+        />}
       </div>
     </div>
   )
