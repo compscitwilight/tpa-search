@@ -6,10 +6,12 @@ import { prisma } from "./db.js";
 import { NodeType } from "../generated/prisma/enums.js";
 
 const limit = plimit(3);
-let skip = true;
+const DIR_ARG = process.argv[2];
+const ROOT_PREFIX = DIR_ARG?.replace(/\/$/, "");
+let totalFilesScraped = 0;
+let filesScrapedInDirectory = 0;
 export const BASE_URL = "https://theponyarchive.com/archive/";
 
-const DIR_ARG: string | undefined = process.argv[2];
 
 const TypeMap = {
     "/icons/folder.gif": "Directory",
@@ -142,7 +144,9 @@ async function gatherMetadata(
         });
 
         if (thumbnailUrl) console.log(`thumbnail included for ${filePath}`);
-        console.log(`Scraped ${filePath}`);
+        // console.log(`Scraped ${filePath}`);
+        filesScrapedInDirectory++;
+        totalFilesScraped++;
     } catch (error) {
         console.warn(`ERROR: Failed to store associated metadata for ${filePath}.`);
         console.warn(`MESSAGE: ${(error as Error).message}`);
@@ -153,8 +157,11 @@ async function gatherMetadata(
  * Entry point for scraping a specified directory, rescursively scrapes subdirectories by default.
  * @param directoryUrl 
  */
-async function scrapeDirectory(directoryUrl: URL, skipUntil?: string, skipDirs: Set<string> = new Set()) {
+async function scrapeDirectory(directoryUrl: URL) {
     try {
+        console.log(`Finished scraping ${filesScrapedInDirectory} files`);
+        filesScrapedInDirectory = 0;
+        console.log(`Entered ${directoryUrl.pathname}`);
         const directoryResponse = await fetch(directoryUrl);
         if (!directoryResponse.ok) {
             console.warn(`Failed to retrieve directory contents for ${directoryUrl.pathname}`);
@@ -174,7 +181,7 @@ async function scrapeDirectory(directoryUrl: URL, skipUntil?: string, skipDirs: 
         }
 
         for (const el of listItemRows.toArray()) {
-            await sleep(5);
+            await sleep(1);
             const listItemContext = $(el);
 
             const fileIcon = listItemContext.find('td[valign="top"]').find("img");
@@ -186,44 +193,32 @@ async function scrapeDirectory(directoryUrl: URL, skipUntil?: string, skipDirs: 
 
             const imgSrc = fileIcon.attr("src");
             if (imgSrc && fileHref) {
-                const absPath = path.join(directoryUrl.pathname, fileHref);
-                // if (absPath.startsWith("/archive/youtube/UCeO7ybWiVOiuV6U5wAVkmaw"))
-                    // skip = false;
-
+                const absPath = new URL(fileHref, directoryUrl).pathname;
                 const nodeType = TypeMap[imgSrc];
-                // console.log(absPath);
                 if (!nodeType) {
                     console.warn(`An icon ${imgSrc} for ${absPath} was not found in TypeMap.`);
                     continue;
                 }
 
-                if (skipUntil && absPath !== skipUntil && !absPath.startsWith(skipUntil + "/")) {
-                    console.log(`Skipping directory ${absPath}`);
-                    continue;
-                }
-
-                if (skipDirs.has(absPath)) {
-                    console.log(`Skipping directory ${absPath}`);
-                    continue;
-                }
-
                 if (absPath.endsWith(".description") || absPath.endsWith(".info.json")) {
-                    console.warn(`Skipping ${absPath} as it is a metadata file.`);
+                    // console.warn(`Skipping ${absPath} as it is a metadata file.`);
                     continue;
                 }
-
-                const newSkipUntil = skipUntil && absPath.startsWith(skipUntil) ? undefined : skipUntil;
 
                 if (nodeType === "Directory") {
-                    // directoryUrl.pathname = path.join(directoryUrl.pathname, fileHref);
-                    // if (skip && absPath.split("/").length > 4) {
-                    //     console.log(`Skipping ${absPath} due to skip condition`);
-                    //     continue;
-                    // }
+                    const nextUrl = new URL(fileHref, directoryUrl);
+                    const nextPath = nextUrl.pathname;
+                    if (ROOT_PREFIX && !nextPath.startsWith(ROOT_PREFIX) && !ROOT_PREFIX.startsWith(nextPath)) {
+                        console.log(`skipping subtree ${nextPath}`);
+                        continue;
+                    }
 
-                    const nextUrl = new URL(fileHref, directoryUrl.href);
-                    await scrapeDirectory(nextUrl, newSkipUntil);
+                    await scrapeDirectory(nextUrl);
                 } else {
+                    if (ROOT_PREFIX && !absPath.startsWith(ROOT_PREFIX)) {
+                        console.log(`skipping ${absPath}`);
+                        continue;
+                    }
                     await limit(() => gatherMetadata(absPath, nodeType, fileModified, fileSize !== "-" ? fileSize : undefined))
                 }
             }
@@ -235,7 +230,8 @@ async function scrapeDirectory(directoryUrl: URL, skipUntil?: string, skipDirs: 
 
 async function startScape() {
     const rootURL = new URL(BASE_URL);
-    await scrapeDirectory(rootURL, DIR_ARG);
+    await scrapeDirectory(rootURL);
+    console.log(`Scraped ${totalFilesScraped} files.`);
 }
 
 await startScape();
